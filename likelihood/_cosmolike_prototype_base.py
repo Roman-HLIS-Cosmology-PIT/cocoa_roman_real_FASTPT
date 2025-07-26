@@ -84,13 +84,14 @@ class _cosmolike_prototype_base(DataSetLikelihood):
           source_multihisto_file=self.source_file,
           source_ntomo=int(self.source_ntomo))
       ci.init_data_real(self.cov_file, self.mask_file, self.data_vector_file)  
+      
       ci.init_accuracy_boost(accuracy_boost=0.35, 
-                             integration_accuracy=-1,
-                             lmax=self.lmax) # seems enough to compute PM
+                             integration_accuracy=-1) # seems enough to compute PM
     else:
+      ci.init_ntable_lmax(lmax=int(self.lmax))
+
       ci.init_accuracy_boost(accuracy_boost=self.accuracyboost, 
-                             integration_accuracy=int(self.integration_accuracy),
-                             lmax=self.lmax)
+                             integration_accuracy=int(self.integration_accuracy))
 
       ci.init_cosmo_runmode(is_linear=False)
 
