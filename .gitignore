@@ -11,3 +11,8 @@ chains/
 data/*cov
 scripts/.DS_Store
 data_challenge/
+interface/.DS_Store
+.DS_Store
+likelihood/.DS_Store
+scripts/.DS_Store
+data/.DS_Store
