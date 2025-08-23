@@ -1,6 +1,9 @@
 CC = $(C_COMPILER)
 CXX = $(CXX_COMPILER)
 
+# LINUX OR MacOS?
+PYOS := $(shell uname -s)
+
 # LINK ARMADILLO LIBRARY
 ARMA := 1
 
@@ -31,21 +34,41 @@ PYBIND := 1
 # LINK HDF5 LIBRARY
 #HDF5 := 1
 
-CSOURCES =
-OBJECTC =
+CSOURCES :=
+OBJECTC :=
+LDFLAGS := 
+LDLIBS := 
 
 CPPSOURCES =
 OBJECTCPP =
 
 CFLAGS = -std=gnu99 -I ${ROOTDIR}/.local/include/ -I ${ROOTDIR}/external_modules/code/
-CXXFLAGS = -std=c++20 -I ${ROOTDIR}/.local/include/ -I ${ROOTDIR}/external_modules/code/
-LDFLAGS = -L ${ROOTDIR}/.local/lib
+CXXFLAGS = -std=c++20  -I ${ROOTDIR}/.local/include/ -I ${ROOTDIR}/external_modules/code/
+LDFLAGS += -L$(CONDA_PREFIX)/lib -L$(ROOTDIR)/.local/lib 
+LDFLAGS += -Wl,-rpath,$(CONDA_PREFIX)/lib -Wl,-rpath,$(ROOTDIR)/.local/lib
 
 ifdef COSMOLIKE_DEBUG_MODE
-	COMMON_FLAGS += -O0  -DDEBUG -W -Wall -Wextra -Wcomment -pedantic -g -fmax-errors=1 -Wno-unknown-pragmas
+	COMMON_FLAGS += -O0  -DDEBUG -W -Wall -Wextra -Wcomment -pedantic -g -fmax-errors=1 -Wno-unknown-pragmas -fsignaling-nans
+	ifeq ($(PYOS),Darwin)
+		COMMON_FLAGS += -fsanitize=undefined,float-divide-by-zero -fno-sanitize-recover=all
+	endif
 else
-	COMMON_FLAGS += -O3 -march=native -fno-fast-math -fopenmp \
-	-fno-associative-math -fno-trapping-math -frounding-math -fsignaling-nans
+	COMMON_FLAGS += -O3 -march=native -fno-fast-math -fno-associative-math -frounding-math
+	ifeq ($(PYOS),Darwin)
+	  COMMON_FLAGS += -fopenmp -ftrapping-math
+	else
+	  COMMON_FLAGS += -fopenmp -ftrapping-math -fsignaling-nans
+	endif
+endif
+
+ifeq ($(PYOS),Darwin)
+	LDFLAGS += -undefined dynamic_lookup -Wl,-rpath,@loader_path
+	SOFLAG := -dynamiclib 
+	INSTALL_NAME_FLAG = -Wl,-install_name,@rpath/$(@F)
+else
+	SOFLAG := -shared
+	LDFLAGS += -Wl,-rpath,'$$ORIGIN'
+	INSTALL_NAME_FLAG =
 endif
 
 ifdef IGNORE_CPP_SPDLOG_INSTALLATION
@@ -54,38 +77,38 @@ endif
 
 ifdef ARMA
 	CXXFLAGS += -DARMA -DARMA_DONT_PRINT_FAST_MATH_WARNING
-	LDFLAGS += -llapack -lopenblas -larpack -larmadillo
+	LDLIBS += -llapack -lopenblas -larpack -larmadillo
 endif
 
 ifdef GSL
 	COMMON_FLAGS += -DHAVE_INLINE -DGSLLIB
 	ifdef IGNORE_C_GSL_INSTALLATION
 		COMMON_FLAGS += -I ${GLOBAL_PACKAGES_INCLUDE}
-		LDFLAGS += -L ${GLOBAL_PACKAGES_LOCATION}/lib
+		LDFLAGS += -L$(GLOBAL_PACKAGES_LOCATION)/lib
 	endif
-	LDFLAGS += -lgsl -lgslcblas
+	LDLIBS += -lgsl -lgslcblas
 endif
 
 ifdef FMT
-	LDFLAGS += -lfmt
+	LDLIBS += -lfmt
 endif
 
 ifdef FFTW
 	ifdef IGNORE_C_FFTW_INSTALLATION
 		COMMON_FLAGS += -I ${GLOBAL_PACKAGES_INCLUDE}
-		LDFLAGS += -L ${GLOBAL_PACKAGES_LOCATION}/lib
+		LDFLAGS += -L$(GLOBAL_PACKAGES_LOCATION)/lib
 	endif
-	LDFLAGS += -lfftw3
+	LDLIBS += -lfftw3
 endif
 
 ifdef NAG
 	COMMON_FLAGS += -I ${NAG_INC} -DNAGLIB
-	LDFLAGS += ${NAG_LIB}/libnagc_mkl.so -lpthread
+	LDLIBS += ${NAG_LIB}/libnagc_mkl.so -lpthread
 endif
 
 ifdef TBB
 	COMMON_FLAGS += -DTBB
-	LDFLAGS += -ltbb -ltbbmalloc
+	LDLIBS += -ltbb -ltbbmalloc
 endif
 
 ifdef CLOG
@@ -96,7 +119,7 @@ endif
 
 ifdef SPDLOG
 	ifndef IGNORE_CPP_SPDLOG_INSTALLATION
-		LDFLAGS += ${ROOTDIR}/.local/lib/libspdlog.a
+		LDLIBS += ${ROOTDIR}/.local/lib/libspdlog.a
 	endif
 endif
 
@@ -104,16 +127,20 @@ CFLAGS += ${COMMON_FLAGS}
 CXXFLAGS += ${COMMON_FLAGS}
 
 ifdef PYBIND
-	CXXFLAGS += $(shell python3 -m pybind11 --includes) -DPYBIND11
-	LDFLAGS += $(shell python3-config --ldflags)
+  ifeq ($(PYOS),Darwin)
+  	CXXFLAGS += $(shell python3 -m pybind11 --includes) -DPYBIND11
+  else
+  	CXXFLAGS += $(shell python3 -m pybind11 --includes) -DPYBIND11
+    LDLIBS += $(shell python3-config --ldflags)
+  endif
 endif
 
 ifdef HDF5
 	CFLAGS += -DHDF5LIB
-	LDFLAGS += -lhdf5
+	LDLIBS += -lhdf5
 endif
 
-LDFLAGS += -lm
+LDLIBS += -lm
 
 all:  shared
 shared: cosmolike_roman_real_interface.so
@@ -171,8 +198,15 @@ $(OBJECTCPP): $(CPPSOURCES)
 	$(CXX) $(CXXFLAGS) -fPIC -c $(CPPSOURCES)
 
 cosmolike_roman_real_interface.so: $(OBJECTC) $(OBJECTCPP)
-	$(CXX) $(CXXFLAGS) -DCOBAYA_SAMPLER -shared -fPIC -o $@ $(OBJECTC) $(OBJECTCPP) interface.cpp $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -DCOBAYA_SAMPLER $(SOFLAG) -fPIC -o $@ \
+	      $(OBJECTC) $(OBJECTCPP) interface.cpp \
+	      $(LDFLAGS) $(INSTALL_NAME_FLAG) $(LDLIBS)
 	@rm *.o
 
+test: $(OBJECTC) $(CSOURCES) $(OBJECTCPP) interface.cpp
+	$(CXX) $(CXXFLAGS) -DCOBAYA_SAMPLER -fPIC -o $@ \
+		$(OBJECTC) $(OBJECTCPP) interface.cpp \
+		$(LDFLAGS) $(LDLIBS) 
+
 clean:
-	@rm -rf cosmolike_roman_real_interface.so cosmolike_roman_real_interface.so.dSYM  *.o
+	@rm -rf test cosmolike_roman_real_interface.so cosmolike_roman_real_interface.so.dSYM  *.o
