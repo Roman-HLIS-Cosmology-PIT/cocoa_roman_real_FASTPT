@@ -3,7 +3,7 @@ debug: False
 stop_at_error: False
 
 likelihood:
-  roman_real.roman_real_3x2pt:
+  roman_real.combo_3x2pt:
     path: ./external_modules/data/roman_real
     data_file: example1.dataset # that assumes lens = source
     lmax: 100000            # lmax computed for real space correlation function

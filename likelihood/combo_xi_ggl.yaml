@@ -1,34 +1,34 @@
 path: null
 data_file: roman_real_M1_GGL0.05.dataset
-accuracyboost: 1.2
+accuracyboost: 1.0
 integration_accuracy: 0
-lmax: 100000 # lmax computed for real space correlation function
-             # (accuracy boost affect this number)
+lmax: 70000 # lmax computed for real space correlation function (
+            # accuracy boost affect this number)
 kmax_boltzmann: 7.5
 speed: 1
 non_linear_emul: 2
 debug: False
+
 # IA REDSHIFT EVOLUTION: 0 = NO_IA (AMPLITUDES SET TO ZERO), 
 #                        1 = IA_NLA_LF
 #                        2 = IA_REDSHIFT_BINNING, 
 #                        3 = IA_REDSHIFT_EVOLUTION
 IA_redshift_evolution: 3
-# IA_MODEL: 0 = NLA
+# IA_MODEL: 0 = NLA, 
 #           1 = TATT
-IA_model: 0
+IA_model: 0 
 external_nz_modeling: 0
 use_emulator: False
 
-# REQUIRE GGL_EXCLUDE TO MATCH THE SIZE OF THE 3x2pt DATA VECTOR
-ggl_exclude: [[6,0],[7,0],[7,1]]
+ggl_exclude: [[4,0],[5,0],[5,1],[6,0],[6,1],[6,2],[7,0],[7,1],[7,2],[7,3]]  
 
 # BIAS REDSHIFT EVOLUTION [b1,b2,bs2,b3,bmag] (choices: see bias.h)
 bias_model: [0,0,0,1,0]
 
 print_intermediate_products: False
 
-use_baryonic_simulations_for_dv_contamination: False
-which_baryonic_simulations_for_dv_contamination: TNG100
+add_baryons_on_dv: False
+which_bsims_add_on_dv: TNG100
 
 create_baryon_pca: False
 use_baryon_pca: False

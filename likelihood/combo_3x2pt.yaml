@@ -27,8 +27,8 @@ bias_model: [0,0,0,1,0]
 
 print_intermediate_products: False
 
-use_baryonic_simulations_for_dv_contamination: False
-which_baryonic_simulations_for_dv_contamination: TNG100
+add_baryons_on_dv: False
+which_bsims_add_on_dv: TNG100
 
 create_baryon_pca: False
 use_baryon_pca: False

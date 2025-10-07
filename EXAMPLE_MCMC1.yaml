@@ -3,12 +3,12 @@ debug: False
 stop_at_error: False
 
 likelihood:
-  roman_real.roman_real_cosmic_shear:
+  roman_real.cosmic_shear:
     path: ./external_modules/data/roman_real
     data_file: example1.dataset # that assumes lens = source
     lmax: 70000 # gg in Roman that requires higher lmax
-    integration_accuracy: 0
     accuracyboost: 1.0
+    integration_accuracy: 0
     kmax_boltzmann: 7.5
     # 1 EE2, 2 Halofit
     non_linear_emul: 2
@@ -16,7 +16,6 @@ likelihood:
     IA_redshift_evolution: 3
     print_datavector: False
     ggl_exclude: [[6,0],[7,0],[7,1]]
-
 params:
   As_1e9:
     prior:
@@ -25,8 +24,8 @@ params:
     ref:
       dist: norm
       loc: 2.1
-      scale: 0.65
-    proposal: 0.4
+      scale: 0.2
+    proposal: 0.2
     latex: 10^9 A_\mathrm{s})
     drop: true
     renames: A
