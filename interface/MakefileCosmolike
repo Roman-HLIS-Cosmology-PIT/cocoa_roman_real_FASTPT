@@ -158,6 +158,7 @@ CSOURCES += \
 		${ROOTDIR}/external_modules/code/cosmolike/baryons.c \
 		${ROOTDIR}/external_modules/code/cosmolike/cosmo3D.c \
 		${ROOTDIR}/external_modules/code/cosmolike/cosmo2D.c \
+		${ROOTDIR}/external_modules/code/cosmolike/cosmo2D_scuts.c \
 		${ROOTDIR}/external_modules/code/cosmolike/halo.c \
 		${ROOTDIR}/external_modules/code/cosmolike/IA.c \
 		${ROOTDIR}/external_modules/code/cosmolike/radial_weights.c \
@@ -177,6 +178,7 @@ OBJECTC += \
 		./bias.o \
 		./cosmo3D.o \
 		./cosmo2D.o \
+		./cosmo2D_scuts.o \
 		./halo.o \
 		./IA.o \
 		./radial_weights.o \
@@ -186,7 +188,8 @@ OBJECTC += \
 
 CPPSOURCES += \
 		${ROOTDIR}/external_modules/code/cosmolike/generic_interface.cpp \
-		${ROOTDIR}/external_modules/code/cosmolike/cosmo2D_wrapper.cpp
+		${ROOTDIR}/external_modules/code/cosmolike/cosmo2D_wrapper.cpp \
+		${ROOTDIR}/external_modules/code/cosmolike/cosmo2D_scuts_wrapper.cpp
 
 OBJECTCPP += \
 		./generic_interface.o \

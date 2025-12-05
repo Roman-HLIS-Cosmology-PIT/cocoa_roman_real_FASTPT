@@ -10,7 +10,7 @@ likelihood:
     path: ./external_modules/data/roman_real
     data_file: example1.dataset # that assumes lens = source
     lmax: 100000            # lmax computed for real space correlation function
-    accuracyboost: 1.2      # (see jupyter)
+    accuracyboost: 1.0      
     integration_accuracy: 0
     kmax_boltzmann: 7.5
     # 1 EE2, 2 Halofit
