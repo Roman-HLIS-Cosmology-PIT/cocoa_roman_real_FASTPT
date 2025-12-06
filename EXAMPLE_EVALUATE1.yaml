@@ -6,7 +6,7 @@ likelihood:
   roman_real.cosmic_shear:
     path: ./external_modules/data/roman_real
     data_file: example1.dataset # that assumes lens = source
-    lmax: 70000 # lmax computed for real space correlation function
+    lmax: 75000 # lmax computed for real space correlation function
     accuracyboost: 1.0
     integration_accuracy: 0
     kmax_boltzmann: 7.5
