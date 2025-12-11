@@ -15,4 +15,6 @@ interface/.DS_Store
 .DS_Store
 likelihood/.DS_Store
 scripts/.DS_Store
+chains2/
+chains*/
 data/.DS_Store

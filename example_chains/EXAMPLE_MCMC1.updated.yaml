@@ -1,0 +1,589 @@
+theory:
+  camb:
+    version: 1.5.9
+    path: ./external_modules/code/CAMB
+    speed: 0.3
+    stop_at_error: false
+    extra_args:
+      halofit_version: takahashi
+      AccuracyBoost: 1.1
+      lens_potential_accuracy: 1.0
+      num_massive_neutrinos: 1
+      nnu: 3.046
+      dark_energy_model: ppf
+      accurate_massive_neutrino_transfers: false
+      k_per_logint: 20
+    ignore_obsolete: false
+    use_renames: true
+    external_primordial_pk: false
+    renames:
+      omegabh2: ombh2
+      omegach2: omch2
+      omegal: omega_de
+      omegak: omk
+      yhe: YHe
+      yheused: YHe
+      YpBBN: Y_p
+      omegan2: omnuh2
+    input_params:
+    - ns
+    - As
+    - H0
+    - w
+    - mnu
+    - tau
+    - wa
+    - omegabh2
+    - omegach2
+    output_params:
+    - omegal
+    - sigma8
+    - age
+    - rdrag
+    - yheused
+    - omegan2
+likelihood:
+  roman_real.cosmic_shear:
+    path: ./external_modules/data/roman_real
+    data_file: example1.dataset
+    accuracyboost: 1.0
+    integration_accuracy: 0
+    lmax: 70000
+    kmax_boltzmann: 7.5
+    speed: 1
+    non_linear_emul: 2
+    debug: false
+    IA_redshift_evolution: 3
+    IA_model: 0
+    external_nz_modeling: 0
+    use_emulator: false
+    ggl_exclude:
+    - - 6
+      - 0
+    - - 7
+      - 0
+    - - 7
+      - 1
+    add_baryons_on_dv: false
+    which_bsims_add_on_dv: antilles-2
+    use_baryon_pca: false
+    create_baryon_pca: false
+    baryon_pca_select_sims: antilles-2-99/antilles-101-378/antilles-380-400
+    filename_baryon_pca: ./projects/desy1xplanck/chains/pca.txt
+    print_datavector: false
+    print_datavector_file: ./projects/roman_real/chains/theory.modelvector
+    type: []
+    stop_at_error: false
+    version: null
+    input_params:
+    - H0
+    - w
+    - mnu
+    - As
+    - roman_DZ_S1
+    - roman_DZ_S2
+    - roman_DZ_S3
+    - roman_DZ_S4
+    - roman_DZ_S5
+    - roman_DZ_S6
+    - roman_DZ_S7
+    - roman_DZ_S8
+    - roman_M1
+    - roman_M2
+    - roman_M3
+    - roman_M4
+    - roman_M5
+    - roman_M6
+    - roman_M7
+    - roman_M8
+    - roman_A1_1
+    - roman_A1_2
+    - roman_A2_1
+    - roman_A2_2
+    - roman_BTA_1
+    - roman_A1_3
+    - roman_A1_4
+    - roman_A1_5
+    - roman_A1_6
+    - roman_A1_7
+    - roman_A1_8
+    - roman_A2_3
+    - roman_A2_4
+    - roman_A2_5
+    - roman_A2_6
+    - roman_A2_7
+    - roman_A2_8
+    - roman_BTA_2
+    - roman_BTA_3
+    - roman_BTA_4
+    - roman_BTA_5
+    - roman_BTA_6
+    - roman_BTA_7
+    - roman_BTA_8
+    - roman_BARYON_Q1
+    - roman_BARYON_Q2
+    - roman_BARYON_Q3
+    - roman_BARYON_Q4
+    output_params: []
+params:
+  As_1e9:
+    prior:
+      min: 0.5
+      max: 5
+    ref:
+      dist: norm
+      loc: 2.1
+      scale: 0.2
+    proposal: 0.2
+    latex: 10^9 A_\mathrm{s})
+    drop: true
+    renames: A
+  ns:
+    prior:
+      min: 0.87
+      max: 1.07
+    ref:
+      dist: norm
+      loc: 0.96605
+      scale: 0.01
+    proposal: 0.01
+    latex: n_\mathrm{s}
+  H0:
+    prior:
+      min: 45
+      max: 91
+    ref:
+      dist: norm
+      loc: 67.32
+      scale: 3
+    proposal: 3
+    latex: H_0
+  omegab:
+    prior:
+      min: 0.03
+      max: 0.07
+    ref:
+      dist: norm
+      loc: 0.0495
+      scale: 0.004
+    proposal: 0.004
+    latex: \Omega_\mathrm{b}
+    drop: true
+  omegam:
+    prior:
+      min: 0.1
+      max: 0.9
+    ref:
+      dist: norm
+      loc: 0.316
+      scale: 0.015
+    proposal: 0.015
+    latex: \Omega_\mathrm{m}
+    drop: true
+  w0pwa:
+    value: -1.0
+    latex: w_{0,\mathrm{DE}}+w_{a,\mathrm{DE}}
+    drop: true
+  w:
+    value: -1.0
+    latex: w_{0,\mathrm{DE}}
+  mnu:
+    value: 0.06
+  tau:
+    value: 0.0697186
+    latex: \tau_\mathrm{reio}
+  As:
+    value: 'lambda As_1e9: 1e-9 * As_1e9'
+    latex: A_\mathrm{s}
+    derived: true
+  wa:
+    value: 'lambda w0pwa, w: w0pwa - w'
+    latex: w_{a,\mathrm{DE}}
+    derived: true
+  omegabh2:
+    value: 'lambda omegab, H0: omegab*(H0/100)**2'
+    latex: \Omega_\mathrm{b} h^2
+    derived: true
+    renames:
+    - ombh2
+  omegach2:
+    value: 'lambda omegam, omegab, mnu, H0: (omegam-omegab)*(H0/100)**2-(mnu*(3.046/3)**0.75)/94.0708'
+    latex: \Omega_\mathrm{c} h^2
+    derived: true
+    renames:
+    - omch2
+  omegal:
+    latex: \Omega_\Lambda
+    derived: true
+    renames:
+    - omega_de
+  omegamh2:
+    derived: 'lambda omegam, H0: omegam*(H0/100)**2'
+    latex: \Omega_\mathrm{m} h^2
+  sigma8:
+    latex: \sigma_8
+    derived: true
+  s8h5:
+    derived: 'lambda sigma8, H0: sigma8*(H0*1e-2)**(-0.5)'
+    latex: \sigma_8/h^{0.5}
+  s8omegamp5:
+    derived: 'lambda sigma8, omegam: sigma8*omegam**0.5'
+    latex: \sigma_8 \Omega_\mathrm{m}^{0.5}
+  s8omegamp25:
+    derived: 'lambda sigma8, omegam: sigma8*omegam**0.25'
+    latex: \sigma_8 \Omega_\mathrm{m}^{0.25}
+  age:
+    latex: '{\rm{Age}}/\mathrm{Gyr}'
+    derived: true
+  rdrag:
+    latex: r_\mathrm{drag}
+    derived: true
+  yheused:
+    latex: Y_P^\mathrm{BBN}
+    derived: true
+    renames:
+    - YHe
+  omegan2:
+    latex: \Omega_\mathrm{\\nu} h^2
+    derived: true
+    renames:
+    - omnuh2
+  omegan:
+    derived: 'lambda omegan2, H0: omegan2/((H0/100)**2)'
+    latex: \Omega_\mathrm{\\nu}
+  roman_DZ_S1:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    proposal: 0.002
+    latex: \Delta z_\mathrm{s,roman}^1
+  roman_DZ_S2:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    proposal: 0.002
+    latex: \Delta z_\mathrm{s,roman}^2
+  roman_DZ_S3:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    proposal: 0.002
+    latex: \Delta z_\mathrm{s,roman}^3
+  roman_DZ_S4:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    proposal: 0.002
+    latex: \Delta z_\mathrm{s,roman}^4
+  roman_DZ_S5:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    proposal: 0.002
+    latex: \Delta z_\mathrm{s,roman}^5
+  roman_DZ_S6:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    proposal: 0.002
+    latex: \Delta z_\mathrm{s,roman}^6
+  roman_DZ_S7:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    proposal: 0.002
+    latex: \Delta z_\mathrm{s,roman}^7
+  roman_DZ_S8:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.002
+    proposal: 0.002
+    latex: \Delta z_\mathrm{s,roman}^8
+  roman_M1:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    proposal: 0.005
+    latex: m_\mathrm{roman}^1
+  roman_M2:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    proposal: 0.005
+    latex: m_\mathrm{roman}^2
+  roman_M3:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    proposal: 0.005
+    latex: m_\mathrm{roman}^3
+  roman_M4:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    proposal: 0.005
+    latex: m_\mathrm{roman}^4
+  roman_M5:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    proposal: 0.005
+    latex: m_\mathrm{roman}^5
+  roman_M6:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    proposal: 0.005
+    latex: m_\mathrm{roman}^6
+  roman_M7:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    proposal: 0.005
+    latex: m_\mathrm{roman}^7
+  roman_M8:
+    prior:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.005
+    proposal: 0.005
+    latex: m_\mathrm{roman}^8
+  roman_A1_1:
+    prior:
+      min: -5
+      max: 5
+    ref:
+      dist: norm
+      loc: 0.7
+      scale: 0.5
+    proposal: 0.5
+    latex: A_\mathrm{1-IA,roman}^1
+  roman_A1_2:
+    prior:
+      min: -5
+      max: 5
+    ref:
+      dist: norm
+      loc: -1.7
+      scale: 0.5
+    proposal: 0.5
+    latex: A_\mathrm{1-IA,roman}^2
+  roman_A2_1:
+    value: 0.0
+    latex: A_\mathrm{2-IA,Roman}^1
+  roman_A2_2:
+    value: 0.0
+    latex: A_\mathrm{2-IA,Roman}^2
+  roman_BTA_1:
+    value: 0.0
+    latex: A_\mathrm{BTA-IA,Roman}^1
+  roman_A1_3:
+    value: 0
+    latex: A_\mathrm{1-IA,roman}^3
+  roman_A1_4:
+    value: 0
+    latex: A_\mathrm{1-IA,roman}^4
+  roman_A1_5:
+    value: 0
+    latex: A_\mathrm{1-IA,roman}^5
+  roman_A1_6:
+    value: 0
+    latex: A_\mathrm{1-IA,roman}^6
+  roman_A1_7:
+    value: 0
+    latex: A_\mathrm{1-IA,roman}^7
+  roman_A1_8:
+    value: 0
+    latex: A_\mathrm{1-IA,roman}^8
+  roman_A2_3:
+    value: 0
+    latex: A_\mathrm{2-IA,Roman}^3
+  roman_A2_4:
+    value: 0
+    latex: A_\mathrm{2-IA,Roman}^4
+  roman_A2_5:
+    value: 0
+    latex: A_\mathrm{2-IA,Roman}^5
+  roman_A2_6:
+    value: 0
+    latex: A_\mathrm{2-IA,Roman}^6
+  roman_A2_7:
+    value: 0
+    latex: A_\mathrm{2-IA,Roman}^7
+  roman_A2_8:
+    value: 0
+    latex: A_\mathrm{2-IA,Roman}^8
+  roman_BTA_2:
+    value: 0
+    latex: A_\mathrm{BTA-IA,Roman}^2
+  roman_BTA_3:
+    value: 0
+    latex: A_\mathrm{BTA-IA,Roman}^3
+  roman_BTA_4:
+    value: 0
+    latex: A_\mathrm{BTA-IA,Roman}^4
+  roman_BTA_5:
+    value: 0
+    latex: A_\mathrm{BTA-IA,Roman}^5
+  roman_BTA_6:
+    value: 0
+    latex: A_\mathrm{BTA-IA,Roman}^6
+  roman_BTA_7:
+    value: 0
+    latex: A_\mathrm{BTA-IA,Roman}^7
+  roman_BTA_8:
+    value: 0
+    latex: A_\mathrm{BTA-IA,Roman}^8
+  roman_BARYON_Q1:
+    value: 0.0
+    latex: Q1_\mathrm{roman}^1
+  roman_BARYON_Q2:
+    value: 0.0
+    latex: Q2_\mathrm{roman}^2
+  roman_BARYON_Q3:
+    value: 0.0
+    latex: Q3_\mathrm{roman}^3
+  roman_BARYON_Q4:
+    value: 0.0
+    latex: Q4_\mathrm{roman}^4
+sampler:
+  mcmc:
+    burn_in: 0
+    max_tries: 10000
+    covmat: null
+    covmat_params: null
+    proposal_scale: 2.4
+    output_every: 60s
+    learn_every: 10d
+    temperature: 1
+    learn_proposal: true
+    learn_proposal_Rminus1_max: 100.0
+    learn_proposal_Rminus1_max_early: 500.0
+    learn_proposal_Rminus1_min: 0.03
+    max_samples: .inf
+    Rminus1_stop: 0.015
+    Rminus1_cl_stop: 0.17
+    Rminus1_cl_level: 0.95
+    Rminus1_single_split: 4
+    measure_speeds: false
+    oversample_power: 0.2
+    oversample_thin: true
+    drag: false
+    blocking:
+    - - 1
+      - - As_1e9
+        - ns
+        - H0
+        - omegab
+        - omegam
+    - - 6
+      - - roman_DZ_S1
+        - roman_DZ_S2
+        - roman_DZ_S3
+        - roman_DZ_S4
+        - roman_DZ_S5
+        - roman_DZ_S6
+        - roman_DZ_S7
+        - roman_DZ_S8
+        - roman_A1_1
+        - roman_A1_2
+    - - 25
+      - - roman_M1
+        - roman_M2
+        - roman_M3
+        - roman_M4
+        - roman_M5
+        - roman_M6
+        - roman_M7
+        - roman_M8
+    callback_function: null
+    callback_every: null
+    seed: null
+    check_every: null
+    oversample: null
+    drag_limits: null
+    fallback_covmat_scale: 4
+    version: 3.5.6
+timing: true
+stop_at_error: false
+output: EXAMPLE_MCMC1
+version: 3.5.6

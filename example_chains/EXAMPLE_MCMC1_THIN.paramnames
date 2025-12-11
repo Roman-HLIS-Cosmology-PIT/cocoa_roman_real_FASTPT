@@ -1,0 +1,40 @@
+As_1e9	10^9 A_\mathrm{s})
+ns	n_\mathrm{s}
+H0	H_0
+omegab	\Omega_\mathrm{b}
+omegam	\Omega_\mathrm{m}
+roman_DZ_S1	\Delta z_\mathrm{s,roman}^1
+roman_DZ_S2	\Delta z_\mathrm{s,roman}^2
+roman_DZ_S3	\Delta z_\mathrm{s,roman}^3
+roman_DZ_S4	\Delta z_\mathrm{s,roman}^4
+roman_DZ_S5	\Delta z_\mathrm{s,roman}^5
+roman_DZ_S6	\Delta z_\mathrm{s,roman}^6
+roman_DZ_S7	\Delta z_\mathrm{s,roman}^7
+roman_DZ_S8	\Delta z_\mathrm{s,roman}^8
+roman_M1	m_\mathrm{roman}^1
+roman_M2	m_\mathrm{roman}^2
+roman_M3	m_\mathrm{roman}^3
+roman_M4	m_\mathrm{roman}^4
+roman_M5	m_\mathrm{roman}^5
+roman_M6	m_\mathrm{roman}^6
+roman_M7	m_\mathrm{roman}^7
+roman_M8	m_\mathrm{roman}^8
+roman_A1_1	A_\mathrm{1-IA,roman}^1
+roman_A1_2	A_\mathrm{1-IA,roman}^2
+As*	A_\mathrm{s}
+omegabh2*	\Omega_\mathrm{b} h^2
+omegach2*	\Omega_\mathrm{c} h^2
+omegal*	\Omega_\Lambda
+omegamh2*	\Omega_\mathrm{m} h^2
+sigma8*	\sigma_8
+s8h5*	\sigma_8/h^{0.5}
+s8omegamp5*	\sigma_8 \Omega_\mathrm{m}^{0.5}
+s8omegamp25*	\sigma_8 \Omega_\mathrm{m}^{0.25}
+age*	{\rm{Age}}/\mathrm{Gyr}
+rdrag*	r_\mathrm{drag}
+yheused*	Y_P^\mathrm{BBN}
+omegan*	\Omega_\mathrm{\\nu}
+minuslogprior*	-\log\pi
+minuslogprior__0*	-\log\pi_\mathrm{0}
+chi2*	\chi^2
+chi2__roman_real.cosmic_shear*	\chi^2_\mathrm{roman\ real.cosmic\ shear}
