@@ -13,7 +13,9 @@ debug: False
 #                        3 = IA_REDSHIFT_EVOLUTION
 IA_redshift_evolution: 3
 # IA_MODEL: 0 = NLA, 1 = TATT
-IA_model: 0
+IA_model: 0 
+# IA_code: 0 = C FASTPT, 1 = Python PAST-PT
+IA_code: 1
 external_nz_modeling: 0
 use_emulator: False
 
@@ -32,6 +34,6 @@ baryon_pca_select_sims: "antilles-2-99/antilles-101-378/antilles-380-400"
 filename_baryon_pca: "./projects/desy1xplanck/chains/pca.txt"
 
 print_datavector: False
-print_datavector_file: "./projects/roman_real/chains/theory.modelvector"
+print_datavector_file: "./projects/roman_real_FASTPT/chains/theory.modelvector"
 
 params: !defaults [params_source, params_lens]

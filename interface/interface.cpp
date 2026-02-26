@@ -39,7 +39,7 @@ namespace py = pybind11;
 #include "cosmolike/generic_interface.hpp"
 #include "cosmolike/cosmo2D_wrapper.hpp"
 
-PYBIND11_MODULE(cosmolike_roman_real_interface, m)
+PYBIND11_MODULE(cosmolike_roman_real_FASTPT_interface, m)
 {
   m.doc() = "CosmoLike Interface for roman-Y1 3x2pt Module";
 
@@ -109,7 +109,8 @@ PYBIND11_MODULE(cosmolike_roman_real_interface, m)
       &cosmolike_interface::init_IA,
       "Init IA related options",
       py::arg("ia_model").none(false).noconvert(),
-      py::arg("ia_redshift_evolution").none(false).noconvert()
+      py::arg("ia_redshift_evolution").none(false).noconvert(),
+      py::arg("ia_code").none(false).noconvert()
     );
 
   m.def("init_probes",
@@ -149,6 +150,25 @@ PYBIND11_MODULE(cosmolike_roman_real_interface, m)
     py::arg("source_ntomo").none(false).noconvert(),
     py::return_value_policy::move
   );
+  
+  m.def("set_IA_PS",
+      &cosmolike_interface::set_IA_PS,
+      "Set FPTIA if FASTPT is called",
+      py::arg("IA_PS").none(false),
+      py::arg("IA_k_min").none(false),
+      py::arg("IA_k_max").none(false),
+      py::arg("N").none(false)
+    );
+
+  m.def("set_bias_PS",
+      &cosmolike_interface::set_bias_PS,
+      "Set FPTbias if FASTPT is called",
+      py::arg("bias_PS").none(false),
+      py::arg("bias_k_min").none(false),
+      py::arg("bias_k_max").none(false),
+      py::arg("sigma4").none(false),
+      py::arg("N").none(false)
+    );
 
   m.def("init_lens_sample_size",
       &cosmolike_interface::set_lens_sample_size,

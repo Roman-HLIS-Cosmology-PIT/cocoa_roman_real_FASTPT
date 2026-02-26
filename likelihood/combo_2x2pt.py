@@ -1,5 +1,5 @@
-from cobaya.likelihoods.roman_real._cosmolike_prototype_base import _cosmolike_prototype_base
-import cosmolike_roman_real_interface as ci
+from cobaya.likelihoods.roman_real_FASTPT._cosmolike_prototype_base import _cosmolike_prototype_base
+import cosmolike_roman_real_FASTPT_interface as ci
 import numpy as np
 
 class combo_2x2pt(_cosmolike_prototype_base):

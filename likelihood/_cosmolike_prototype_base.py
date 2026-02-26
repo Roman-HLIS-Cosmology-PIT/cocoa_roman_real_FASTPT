@@ -15,7 +15,7 @@ from getdist import IniFile
 import euclidemu2 as ee2
 import math
 
-import cosmolike_roman_real_interface as ci
+import cosmolike_roman_real_FASTPT_interface as ci
 
 survey = "roman"
 
@@ -101,8 +101,13 @@ class _cosmolike_prototype_base(DataSetLikelihood):
       
       ci.init_data_real(self.cov_file, self.mask_file, self.data_vector_file)
 
+      # Intrinsic alignment initialization (CosmoLike)
+      if (self.IA_model==0) and (self.IA_code==1):
+        self.log.warning("Fall back to C FASTPT under NLA (IA_model = 0)!")
+        self.IA_code = 0
       ci.init_IA(ia_model = int(self.IA_model), 
-                 ia_redshift_evolution = int(self.IA_redshift_evolution))
+                ia_redshift_evolution = int(self.IA_redshift_evolution),
+                ia_code = int(self.IA_code))
      
       if self.probe != "xi":
         # (b1, b2, bs2, b3, bmag). 0 = one amplitude per bin
@@ -173,7 +178,7 @@ class _cosmolike_prototype_base(DataSetLikelihood):
           } # in Mpc
         }     
     else:
-      return {
+      _requirements_ = {
         "As": None,
         "H0": None,
         "omegam": None,
@@ -193,6 +198,11 @@ class _cosmolike_prototype_base(DataSetLikelihood):
           'tt': 0
         }
       }
+      # Also need Python FAST-PT if IA_code == 1
+      if (self.IA_code == 1):
+        _requirements_["IA_PS"] = None
+        _requirements_["bias_PS"] = None
+      return _requirements_
 
   # ------------------------------------------------------------------------
   # ------------------------------------------------------------------------
@@ -254,6 +264,23 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         z_1D=self.z_interp_1D,
         chi=self.provider.get_comoving_radial_distance(self.z_interp_1D)*h # convert to Mpc/h
       )
+       # IA power spectra from FAST-PT 
+      # This need to be called after `set_cosmology` becase `set_cosmology`` will reset 
+      # the random state cosmology.random
+      if int(self.IA_code)==1:
+        #self.log.info(f'Calling FAST-PT to get IA-related power spectrum')
+        FPTIA = self.provider.get_IA_PS()
+        FPTbias, sigma4 = self.provider.get_bias_PS()
+        FPT_kmin, FPT_kmax = FPTIA[-2,0], FPTIA[-2,-1] # dimensionless
+        FPT_Ntab = len(FPTIA[0])
+        #print(FPTIA, FPTbias)
+        #self.log.info(f'{len(FPTIA)} FPTIA and {len(FPTbias)} FPTbias perturbation terms returned')
+        #self.log.info(f'Each IA term has shape of {FPTIA[0].shape}')
+        ci.set_IA_PS(FPTIA.flatten(order='C'), FPT_kmin, FPT_kmax, FPT_Ntab)
+        ci.set_bias_PS(FPTbias.flatten(order='C'), FPT_kmin, FPT_kmax, sigma4, FPT_Ntab)
+        # for debug
+        #np.savetxt("FPT_IA_pyfastpt.txt", FPTIA.T)
+        #np.savetxt("FPT_bias_pyfastpt.txt", FPTbias.T)
     else:
       ci.set_distances(
         z=self.z_interp_1D,

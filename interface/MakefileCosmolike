@@ -144,7 +144,7 @@ endif
 LDLIBS += -lm
 
 all:  shared
-shared: cosmolike_roman_real_interface.so
+shared: cosmolike_roman_real_FASTPT_interface.so
 
 CSOURCES += \
 		${ROOTDIR}/external_modules/code/cfftlog/cfftlog.c \
@@ -158,7 +158,6 @@ CSOURCES += \
 		${ROOTDIR}/external_modules/code/cosmolike/baryons.c \
 		${ROOTDIR}/external_modules/code/cosmolike/cosmo3D.c \
 		${ROOTDIR}/external_modules/code/cosmolike/cosmo2D.c \
-		${ROOTDIR}/external_modules/code/cosmolike/cosmo2D_scuts.c \
 		${ROOTDIR}/external_modules/code/cosmolike/halo.c \
 		${ROOTDIR}/external_modules/code/cosmolike/IA.c \
 		${ROOTDIR}/external_modules/code/cosmolike/radial_weights.c \
@@ -178,7 +177,6 @@ OBJECTC += \
 		./bias.o \
 		./cosmo3D.o \
 		./cosmo2D.o \
-		./cosmo2D_scuts.o \
 		./halo.o \
 		./IA.o \
 		./radial_weights.o \
@@ -189,7 +187,6 @@ OBJECTC += \
 CPPSOURCES += \
 		${ROOTDIR}/external_modules/code/cosmolike/generic_interface.cpp \
 		${ROOTDIR}/external_modules/code/cosmolike/cosmo2D_wrapper.cpp \
-		${ROOTDIR}/external_modules/code/cosmolike/cosmo2D_scuts_wrapper.cpp
 
 OBJECTCPP += \
 		./generic_interface.o \
@@ -201,7 +198,7 @@ $(OBJECTC): $(CSOURCES)
 $(OBJECTCPP): $(CPPSOURCES)
 	$(CXX) $(CXXFLAGS) -fPIC -c $(CPPSOURCES)
 
-cosmolike_roman_real_interface.so: $(OBJECTC) $(OBJECTCPP)
+cosmolike_roman_real_FASTPT_interface.so: $(OBJECTC) $(OBJECTCPP)
 	$(CXX) $(CXXFLAGS) -DCOBAYA_SAMPLER $(SOFLAG) -fPIC -o $@ \
 	      $(OBJECTC) $(OBJECTCPP) interface.cpp \
 	      $(LDFLAGS) $(INSTALL_NAME_FLAG) $(LDLIBS)
@@ -213,4 +210,4 @@ test: $(OBJECTC) $(CSOURCES) $(OBJECTCPP) interface.cpp
 		$(LDFLAGS) $(LDLIBS) 
 
 clean:
-	@rm -rf test cosmolike_roman_real_interface.so cosmolike_roman_real_interface.so.dSYM  *.o
+	@rm -rf test cosmolike_roman_real_FASTPT_interface.so cosmolike_roman_real_FASTPT_interface.so.dSYM  *.o
