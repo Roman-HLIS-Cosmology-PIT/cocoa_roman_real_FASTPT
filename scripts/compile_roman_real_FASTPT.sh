@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
-if [ -z "${IGNORE_COSMOLIKE_ROMAN_REAL_CODE}" ]; then
+if [ -z "${IGNORE_COSMOLIKE_ROMAN_REAL_FASTPT_CODE}" ]; then
 
   if [ -z "${ROOTDIR}" ]; then
     source start_cocoa.sh || { pfail 'ROOTDIR'; return 1; }
@@ -57,7 +57,7 @@ if [ -z "${IGNORE_COSMOLIKE_ROMAN_REAL_CODE}" ]; then
 
   PROJECT="${ROOTDIR:?}/projects"
 
-  FOLDER="${ROMAN_REAL_NAME:-"roman_real"}"
+  FOLDER="${ROMAN_REAL_FASTPT_NAME:-"roman_real_FASTPT"}"
 
   PACKDIR="${PROJECT:?}/${FOLDER:?}"
 

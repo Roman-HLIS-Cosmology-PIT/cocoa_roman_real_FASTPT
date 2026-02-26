@@ -10,9 +10,9 @@ if [ -z "${IGNORE_COSMOLIKE_romanY1_CODE}" ]; then
   # Parenthesis = run in a subshell
   ( source "${ROOTDIR:?}/installation_scripts/flags_check.sh" ) || return 1;
 
-  export LD_LIBRARY_PATH="${ROOTDIR:?}/projects/roman_real/interface":${LD_LIBRARY_PATH}
+  export LD_LIBRARY_PATH="${ROOTDIR:?}/projects/roman_real_FASTPT/interface":${LD_LIBRARY_PATH}
 
-  export PYTHONPATH="${ROOTDIR:?}/projects/roman_real/interface":${PYTHONPATH}
+  export PYTHONPATH="${ROOTDIR:?}/projects/roman_real_FASTPT/interface":${PYTHONPATH}
 
   if [ -n "${COSMOLIKE_DEBUG_MODE}" ]; then
       export SPDLOG_LEVEL=debug
