@@ -16,6 +16,7 @@ likelihood:
     # 1 EE2, 2 Halofit
     non_linear_emul: 2
     IA_model: 0
+    IA_code: 0
     IA_redshift_evolution: 3
     ggl_exclude: [[6,0],[7,0],[7,1]]
     create_baryon_pca: false

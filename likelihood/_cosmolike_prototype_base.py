@@ -15,7 +15,7 @@ from getdist import IniFile
 import euclidemu2 as ee2
 import math
 
-import cosmolike_roman_real_FASTPT_interface as ci
+import projects.roman_real_FASTPT.interface.cosmolike_roman_real_FASTPT_interface as ci
 
 survey = "roman"
 
