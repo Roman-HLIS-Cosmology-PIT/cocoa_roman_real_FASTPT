@@ -270,15 +270,15 @@ class _cosmolike_prototype_base(DataSetLikelihood):
       # the random state cosmology.random
       if int(self.IA_code)==1:
         #self.log.info(f'Calling FAST-PT to get IA-related power spectrum')
-        FPTIA = self.provider.get_IA_PS()
+        FPTIA, FPTIA_kcut = self.provider.get_IA_PS()
         FPTbias, sigma4 = self.provider.get_bias_PS()
         FPT_kmin, FPT_kmax = FPTIA[-2,0], FPTIA[-2,-1] # dimensionless
         FPT_Ntab = len(FPTIA[0])
         #print(FPTIA, FPTbias)
         #self.log.info(f'{len(FPTIA)} FPTIA and {len(FPTbias)} FPTbias perturbation terms returned')
         #self.log.info(f'Each IA term has shape of {FPTIA[0].shape}')
-        ci.set_IA_PS(FPTIA.flatten(order='C'), FPT_kmin, FPT_kmax, FPT_Ntab)
-        ci.set_bias_PS(FPTbias.flatten(order='C'), FPT_kmin, FPT_kmax, sigma4, FPT_Ntab)
+        ci.set_IA_PS(FPTIA.flatten(order='C'), FPT_kmin, FPT_kmax, FPTIA_kcut, FPT_Ntab)
+        ci.set_bias_PS(FPTbias.flatten(order='C'), FPT_kmin, FPT_kmax, FPTIA_kcut, sigma4, FPT_Ntab)
         # for debug
         #np.savetxt("FPT_IA_pyfastpt.txt", FPTIA.T)
         #np.savetxt("FPT_bias_pyfastpt.txt", FPTbias.T)
@@ -340,7 +340,9 @@ class _cosmolike_prototype_base(DataSetLikelihood):
       ci.set_nuisance_bias(
         B1=[params.get(p,1) for p in [survey+"_B1_"+str(i+1) for i in range(ntomo)]],
         B2=[params.get(p,0) for p in [survey+"_B2_"+str(i+1) for i in range(ntomo)]],
-        B_MAG=[params.get(p,0) for p in [survey+"_BMAG_"+str(i+1) for i in range(ntomo)]]
+        B_MAG=[params.get(p,0) for p in [survey+"_BMAG_"+str(i+1) for i in range(ntomo)]],
+        B3nl=[params.get(p,0) for p in [survey+"_B3NL_"+str(i+1) for i in range(ntomo)]],
+        BK=[params.get(p,0) for p in [survey+"_BK_"+str(i+1) for i in range(ntomo)]]
       )
       if self.external_nz_modeling: 
         # here we send n(z) at every point in the chain as the user may
@@ -531,3 +533,37 @@ class _cosmolike_prototype_base(DataSetLikelihood):
       fmt = '%d', '%1.8e'
       np.savetxt(self.print_datavector_file, out, fmt = fmt)
     return datavector
+
+  def calculate_C_ss_kernel(self):
+    z_array = np.linspace(0.001, 4.0)
+    a_array = 1/(1+z_array)
+    ells_edges = np.logspace(np.log10(30), np.log10(4000), 16)
+    ells_center = np.sqrt(ells_edges[1:]*ells_edges[:-1])
+
+    output_file = "C_ss_coefficients.txt"
+    with open(output_file, "w") as fp:
+      fp.write("# z a n1 n2 ell Pk ta tt mix ta_dE1dE2 mixAmixB mixEE k\n")
+      for i in range(self.source_ntomo):
+        for j in range(i, self.source_ntomo):
+          for ell in ells_center:
+            params = np.array([i,j,ell, 1])
+            for z, a in zip(z_array, a_array):
+              ans = ci.kernel_for_C_ss_tomo_limber(a, params)
+              fp.write(f'{z:.3e} {a:.3e} {i:d} {j:d} {ell:.3e} ' + ' '.join([str(coeff) for coeff in (ans.T)[0]]) + '\n')
+
+  def calculate_C_gs_kernel(self):
+      z_array = np.linspace(0.001, 4.0)
+      a_array = 1/(1+z_array)
+      ells_edges = np.logspace(np.log10(30), np.log10(4000), 16)
+      ells_center = np.sqrt(ells_edges[1:]*ells_edges[:-1])
+
+      output_file = "C_gs_coefficients.txt"
+      with open(output_file, "w") as fp:
+        fp.write("# z a n1 n2 ell Pk oneloop ta tt mix ta_dE1dE2 mixAmixB mixEE k\n")
+        for i in range(self.source_ntomo):
+          for j in range(i, self.source_ntomo):
+            for ell in ells_center:
+              params = np.array([i,j,ell, 1])
+              for z, a in zip(z_array, a_array):
+                ans = ci.kernel_for_C_gs_tomo_limber(a, params)
+                fp.write(f'{z:.3e} {a:.3e} {i:d} {j:d} {ell:.3e} ' + ' '.join([str(coeff) for coeff in (ans.T)[0]]) + '\n')

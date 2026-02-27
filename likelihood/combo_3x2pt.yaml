@@ -22,8 +22,8 @@ use_emulator: False
 # REQUIRE GGL_EXCLUDE TO MATCH THE SIZE OF THE 3x2pt DATA VECTOR
 ggl_exclude: [[6,0],[7,0],[7,1]]  
 
-# BIAS REDSHIFT EVOLUTION [b1,b2,bs2,b3,bmag] (choices: see bias.h)
-bias_model: [0,0,0,1,0]
+# BIAS REDSHIFT EVOLUTION [b1,b2,bs2,b3,bmag,bK] (see bias.c)
+bias_model: [0,0,0,1,0,0]
 
 add_baryons_on_dv: False
 which_bsims_add_on_dv: "antilles-2"

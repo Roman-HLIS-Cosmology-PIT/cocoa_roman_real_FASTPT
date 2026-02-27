@@ -39,9 +39,229 @@ namespace py = pybind11;
 #include "cosmolike/generic_interface.hpp"
 #include "cosmolike/cosmo2D_wrapper.hpp"
 
+// Some helper functions for debugging
+static int include_HOD_GX = 0; // 0 or 1
+static int include_RSD_GS = 0; // 0 or 1 
+arma::Col<double> kernel_for_C_ss_tomo_limber(double a, arma::Col<double> params)
+{
+  /* params: [n1, n2, l, flag_EE]
+  Return: coefficients for [Pk, ta, tt, mix, ta_dE1+ta_dE2, mixA+mixB, mixEE] + k (dimensionless)
+   */
+  if (!(a>0) || !(a<1)) {
+    spdlog::debug("\x1b[90m{}\x1b[0m: a>0 and a<1 not true", "kernel_for_C_ss_tomo_limber");
+    exit(1);
+  }
+  const int n1 = (int) params(0); // first source bin 
+  const int n2 = (int) params(1); // second source bin 
+  if (n1 < 0 || 
+      n1 > redshift.shear_nbin - 1 || 
+      n2 < 0 || 
+      n2 > redshift.shear_nbin - 1)
+  {
+    spdlog::debug("\x1b[90m{}\x1b[0m: error in selecting bin number (ni, nj) = [{},{}]", "kernel_for_C_ss_tomo_limber", n1, n2);
+    exit(1);
+  }
+  const double l = params(2);
+  const int EE = (int) params(3);
+
+  const double ell = l + 0.5;
+  struct chis chidchi = chi_all(a);
+  const double growfac_a = growfac(a);
+  const double hoverh0 = hoverh0v2(a, chidchi.dchida);
+  const double fK = f_K(chidchi.chi); // (Mpc/h)/(c/H0=100) (dimensionless)
+  const double k = ell/fK; // (c/H0)/(Mpc/h)
+  
+  const double WK1 = W_kappa(a, fK, n1);
+  const double WK2 = W_kappa(a, fK, n2);
+  const double WS1 = W_source(a, n1, hoverh0);
+  const double WS2 = W_source(a, n2, hoverh0);
+
+  const double ell4 = ell*ell*ell*ell; // correction (1812.05995 eqs 74-79)
+  const double ell_prefactor = l*(l - 1.)*(l + 1.)*(l + 2.)/ell4; 
+
+  arma::Col ans = arma::zeros<arma::Col<double>>(8);
+  ans(7) = k;
+  switch(nuisance.IA_MODEL) 
+  {
+    case IA_MODEL_TATT:
+    { 
+      // JX: get IA coefficients at different redshift
+      double IA_AX[2];
+      IA_A1_Z1Z2(a, growfac_a, n1, n2, IA_AX);
+      const double C11 = IA_AX[0];
+      const double C12 = IA_AX[1];
+      IA_A2_Z1Z2(a, growfac_a, n1, n2, IA_AX);
+      const double C21 = IA_AX[0];
+      const double C22 = IA_AX[1];
+      IA_BTA_Z1Z2(a, growfac_a, n1, n2, IA_AX);
+      const double bta1 = IA_AX[0];
+      const double bta2 = IA_AX[1];
+
+      if (EE == 1)
+      {
+        ans(0) = WK1*WK2 - WS1*WK2*C11 - WS2*WK1*C12 + WS1*WS2*C11*C12; // Pk
+        ans(1) = WS1*WS2*C11*C12*bta1*bta2; // ta
+        ans(2) = WS1*WS2*25.*C21*C22; // tt
+        ans(4) = -WS1*WK2*C11*bta1 - WS2*WK1*C12*bta2 + WS1*WS2*C11*C12*(bta1+bta2); // ta_dE1+ta_dE2
+        ans(5) = WS1*WK2*5.*C21 + WS2*WK1*5.*C22 - WS1*WS2*5.*(C11*C22 + C12*C21); // mixA+mixB
+        ans(6) = -WS1*WS2*5.*(C11*bta1*C22+C12*bta2*C21); // mixEE
+      }
+      else  
+      {
+        ans(0) = 0.; // Pk
+        ans(1) = WS1*WS2*C11*C12*bta1*bta2; // ta
+        ans(2) = WS1*WS2*25.*C21*C22; // tt
+        ans(3) = -WS1*WS2*5.*(C11*bta1*C22+C12*bta2*C21); // mix
+      }
+      break;
+    }
+    case IA_MODEL_NLA:
+    {
+      if (EE == 1) { 
+        double IA_A1[2];
+        IA_A1_Z1Z2(a, growfac_a, n1, n2, IA_A1);
+        const double C11 = IA_A1[0];
+        const double C12 = IA_A1[1];
+        ans(0) = WK1*WK2 - WS1*WK2*C11 - WS2*WK1*C12 + WS1*WS2*C11*C12;
+      }
+      break;
+    }
+    default:
+    {
+      exit(1);
+    }
+  }
+  return ans*(chidchi.dchida/(fK*fK))*ell_prefactor;
+}
+
+arma::Col<double> kernel_for_C_gs_tomo_limber(double a, arma::Col<double> params)
+{
+  /* params: [nl, ns, l, flag_nonlinear_bias]
+  Return: coefficients for [Pk, 1loop, ta, tt, mix, ta_dE1+ta_dE2, mixA+mixB, mixEE] + k (dimensionless)
+   */
+  if (!(a>0) || !(a<1)) {
+    spdlog::debug("\x1b[90m{}\x1b[0m: a>0 and a<1 not true", "kernel_for_C_gs_tomo_limber");
+    exit(1);
+  }
+  const int nl = (int) params(0);
+  const int ns = (int) params(1);
+  if (nl < 0 || 
+      nl > redshift.clustering_nbin - 1 || 
+      ns < 0 || 
+      ns > redshift.shear_nbin - 1) {
+    spdlog::debug("\x1b[90m{}\x1b[0m: error in selecting bin number (nl, ns) = [{},{}]", "kernel_for_C_gs_tomo_limber", nl, ns);
+    exit(1);
+  }
+  const double l = params(2);
+  const int nonlinear_bias = params(3);
+  
+  const double growfac_a = growfac(a);
+  struct chis chidchi = chi_all(a);
+  const double hoverh0 = hoverh0v2(a, chidchi.dchida);
+  const double ell = l + 0.5;
+  const double fK = f_K(chidchi.chi);
+  const double k = ell/fK;
+  const double z = 1.0/a - 1.0;
+
+  const double b1 = gb1(z, nl);
+  const double bmag = gbmag(z, nl);
+
+  const double WK = W_kappa(a, fK, ns);
+  const double WGAL = W_gal(a, nl, hoverh0);
+  const double WMAG = W_mag(a, fK, nl);
+  const double WS   = W_source(a, ns, hoverh0);
+
+  const double ell_prefactor = l*(l + 1.)/(ell*ell); // correction (1812.05995 eqs 74-79)
+  const double tmp = (l - 1.)*l*(l + 1.)*(l + 2.);   // correction (1812.05995 eqs 74-79)
+  const double ell_prefactor2 = (tmp > 0) ? sqrt(tmp)/(ell*ell) : 0.0;
+
+  arma::Col<double> ans = arma::zeros<arma::Col<double>>(9);
+  ans(8) = k;
+
+  switch(nuisance.IA_MODEL)
+  {
+    case IA_MODEL_TATT:
+    {
+      if (include_HOD_GX == 1)
+      {
+        spdlog::debug("\x1b[90m{}\x1b[0m: HOD not implemented!", "kernel_for_C_gs_tomo_limber");
+        exit(1);
+      }
+
+      double WRSD = 0.0;
+      if (include_RSD_GS == 1)
+      {
+        const double chi_0 = f_K(ell/k);
+        const double chi_1 = f_K((ell+1.)/k);
+        const double a_0 = a_chi(chi_0);
+        const double a_1 = a_chi(chi_1);
+        WRSD = W_RSD(ell, a_0, a_1, nl);
+      }
+
+      const double C1ZS  = IA_A1_Z1(a, growfac_a, ns);
+      const double btazs = IA_BTA_Z1(a, growfac_a, ns);
+      const double C2ZS  = IA_A2_Z1(a, growfac_a, ns);
+
+      // TODO: IS THIS CONSISTENT (WRSD, ONELOOP AND IA CROSS TERMS)?
+      ans(0) = WK*(WGAL*b1+WMAG*ell_prefactor*bmag+WRSD)-WS*(WGAL*b1+WMAG*ell_prefactor*bmag)*C1ZS; // Pk
+      ans(1) = WK*WGAL; // 1loop
+      ans(5) = -WS*(WGAL*b1+WMAG*ell_prefactor*bmag)*C1ZS*btazs; // ta_dE1+ta_dE2
+      ans(6) = WS*(WGAL*b1+WMAG*ell_prefactor*bmag)*5.*C2ZS; // mixA+mixB
+      break;
+    }
+    case IA_MODEL_NLA:
+    {
+      if (include_HOD_GX == 1)
+      {
+        spdlog::debug("\x1b[90m{}\x1b[0m: HOD not implemented!", "kernel_for_C_gs_tomo_limber");
+        exit(1);
+      }
+
+      double WRSD = 0.0;
+      if (include_RSD_GS == 1)
+      {
+        const double chi_0 = f_K(ell/k);
+        const double chi_1 = f_K((ell+1.)/k);
+        const double a_0 = a_chi(chi_0);
+        const double a_1 = a_chi(chi_1);
+        WRSD = W_RSD(ell, a_0, a_1, nl);
+      }
+      
+      const double C1ZS = IA_A1_Z1(a, growfac_a, ns);
+
+      ans(0) = (WK-WS*C1ZS)*(WGAL*b1+WMAG*ell_prefactor*bmag+WRSD); // Pk
+      ans(1) = (WK-WS*C1ZS)*WGAL; // 1loop
+      break;
+    }
+    default:
+    {
+      exit(1);
+    }
+  }
+  return ans*(chidchi.dchida/(fK*fK))*ell_prefactor2;
+}
+
 PYBIND11_MODULE(cosmolike_roman_real_FASTPT_interface, m)
 {
   m.doc() = "CosmoLike Interface for roman-Y1 3x2pt Module";
+
+    // --------------------------------------------------------------------
+  // HELPER FUNCTIONS
+  // --------------------------------------------------------------------
+  m.def("kernel_for_C_ss_tomo_limber",
+    &kernel_for_C_ss_tomo_limber,
+    "Calculate the angular PS C_ss coefficients of various Pk terms",
+    py::arg("a").none(false),
+    py::arg("params").none(false)
+  );
+
+  m.def("kernel_for_C_gs_tomo_limber",
+    &kernel_for_C_gs_tomo_limber,
+    "Calculate the angular PS C_gs coefficients of various Pk terms",
+    py::arg("a").none(false),
+    py::arg("params").none(false)
+  );
+
 
   // --------------------------------------------------------------------
   // INIT FUNCTIONS
@@ -157,6 +377,7 @@ PYBIND11_MODULE(cosmolike_roman_real_FASTPT_interface, m)
       py::arg("IA_PS").none(false),
       py::arg("IA_k_min").none(false),
       py::arg("IA_k_max").none(false),
+      py::arg("IA_k_cutoff").none(false),
       py::arg("N").none(false)
     );
 
@@ -166,6 +387,7 @@ PYBIND11_MODULE(cosmolike_roman_real_FASTPT_interface, m)
       py::arg("bias_PS").none(false),
       py::arg("bias_k_min").none(false),
       py::arg("bias_k_max").none(false),
+      py::arg("bias_k_cutoff").none(false),
       py::arg("sigma4").none(false),
       py::arg("N").none(false)
     );
@@ -262,7 +484,9 @@ PYBIND11_MODULE(cosmolike_roman_real_FASTPT_interface, m)
       "Set nuisance Bias Parameters",
       py::arg("B1").none(false),
       py::arg("B2").none(false),
-      py::arg("B_MAG").none(false)
+      py::arg("B_MAG").none(false),
+      py::arg("B3nl").none(false),
+      py::arg("BK").none(false)
     );
 
   m.def("set_nuisance_shear_calib",
@@ -503,7 +727,7 @@ PYBIND11_MODULE(cosmolike_roman_real_FASTPT_interface, m)
       py::arg("a").none(false).noconvert(),
       py::arg("l").none(false).noconvert(),
       py::arg("ni").none(false).noconvert(),
-      py::arg("ni").none(false).noconvert()
+      py::arg("nj").none(false).noconvert()
     );
 
   m.def("int_for_C_ss_tomo_limber",
