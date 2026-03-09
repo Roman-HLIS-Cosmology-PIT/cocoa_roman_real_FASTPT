@@ -4,7 +4,7 @@ stop_at_error: False
 
 likelihood:
   roman_real_FASTPT.cosmic_shear:
-    path: ./external_modules/data/roman_real
+    path: ./external_modules/data/roman_real_FASTPT
     data_file: example1.dataset # that assumes lens = source
     lmax: 75000 # lmax computed for real space correlation function
     accuracyboost: 1.0

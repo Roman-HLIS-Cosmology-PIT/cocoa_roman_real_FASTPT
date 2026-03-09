@@ -1,0 +1,11 @@
+data_file = example1.modelvector
+cov_file = roman_real_training_cov
+mask_file = ones.mask
+nz_lens_file = example1.nz
+nz_source_file = example1.nz
+lens_ntomo = 8
+source_ntomo = 8
+n_theta = 15
+theta_min_arcmin = 2.5
+theta_max_arcmin = 250.
+all_sims_hdf5_file = baryons_logPkR.h5
